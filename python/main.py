@@ -82,7 +82,7 @@ class Game:
                 pieces = new_board["Pieces"]
 
 		if not (self.__UpdateBoardDirection(pieces, x, y, 1, 0)
-                | self.__UpdateBoardDirection(pieces, x, y, 0, 1)
+                        | self.__UpdateBoardDirection(pieces, x, y, 0, 1)
 		        | self.__UpdateBoardDirection(pieces, x, y, -1, 0)
 		        | self.__UpdateBoardDirection(pieces, x, y, 0, -1)
 		        | self.__UpdateBoardDirection(pieces, x, y, 1, 1)
@@ -151,78 +151,6 @@ Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
         # Do the picking of a move and print the result.
         self.pickMove(g)
 
-	def Valid(self,move,g):
-		board = copy.deepcopy(g._board)
-        pieces = board["Pieces"]
-		x = move["Where"][0]
-		y = move["Where"][1]
-		g.SetPos(pieces,x,y,move["As"])
-
-        if g.Pos(x, y) != 0:
-            # x,y is already occupied.
-            return None
-        moves = []
-        for y in xrange(1,9):
-            for x in xrange(1,9):
-                move = {"Where": [x,y],"As": g.Next()}
-                if self.NextBoard(pieces,move):
-                    moves.append(move)
-        return moves        
-
-	def __UpdateBoard(self, new_board, x, y, delta_x, delta_y):
-		player = g.Next()
-		opponent = 3 - player
-		look_x = x + delta_x
-		look_y = y + delta_y
-		flip_list = []
-		while g.Pos(new_board, look_x, look_y) == opponent:
-			flip_list.append([look_x, look_y])
-			look_x += delta_x
-			look_y += delta_y
-		if g.Pos(new_board, look_x, look_y) == player and len(flip_list) > 0:
-                        # there's a continuous line of our opponents
-                        # pieces between our own pieces at
-                        # [look_x,look_y] and the newly placed one at
-                        # [x,y], making it a legal move.
-			g.SetPos(new_board, x, y, player)
-			for flip_move in flip_list:
-				flip_x = flip_move[0]
-				flip_y = flip_move[1]
-				g.SetPos(new_board, flip_x, flip_y, player)
-                        return True
-                return False
-
-	def NextBoard(self,pieces,move):
-		x = move["Where"][0]
-		y = move["Where"][1]
-                if g.Pos(x, y) != 0:
-                        # x,y is already occupied.
-                        return None
-		if not (self.__UpdateBoard(pieces, x, y, 1, 0)
-                | self.__UpdateBoard(pieces, x, y, 0, 1)
-		        | self.__UpdateBoard(pieces, x, y, -1, 0)
-		        | self.__UpdateBoard(pieces, x, y, 0, -1)
-		        | self.__UpdateBoard(pieces, x, y, 1, 1)
-		        | self.__UpdateBoard(pieces, x, y, -1, 1)
-		        | self.__UpdateBoard(pieces, x, y, 1, -1)
-		        | self.__UpdateBoard(pieces, x, y, -1, -1)):
-                        # Nothing was captured. Move is invalid.
-                        return None
-                
-                # Something was captured. Move is valid.
-                new_board["Next"] = 3 - self.Next()
-		return Game(board=new_board)
-
-	def evaluate(self,lst,g):
-		keep = 0
-		best
-		print len(lst)
-		for x in range(len(lst)):
-			ret_lst = Valid(x,g)
-			if keep < len(ret_lst)
-				keep = len(ret_lst)
-				best = x
-		return best
 
     def pickMove(self, g):
     	# Gets all valid moves.
@@ -235,10 +163,26 @@ Paste JSON here:<p/><textarea name=json cols=80 rows=24></textarea>
                 # TO STEP STUDENTS:
                 # You'll probably want to change how this works, to do something
                 # more clever than just picking a random move.
+
+		    score = -1
+		    point = [
+		    [7,2,5,4,4,5,2,7],
+		    [2,0,4,3,3,4,0,2],
+		    [5,4,5,4,4,5,4,5],
+		    [4,3,4,5,5,4,3,4],
+		    [4,3,4,5,5,4,3,4],
+		    [5,4,5,4,4,5,4,5],
+		    [2,0,4,3,3,4,0,2],
+		    [7,2,5,4,4,5,2,7]]
+		    for tmp in valid_moves:
+			    x = tmp["Where"][0]
+			    y = tmp["Where"][1]
+			    if score < point[x-1][y-1]:
+				    score = point[x-1][y-1]
+				    move = tmp
+		    self.response.write(PrettyMove(move))
 	    	#move = random.choice(valid_moves)
-	    	#move = minmax(3,valid_moves,valid_moves[0]["As"])
-	    	move = self.evaluate(valid_moves,g)
-    		self.response.write(PrettyMove(move[1]))
+	    	#move = self.evaluate(valid_moves)
 
 
 app = webapp2.WSGIApplication([
